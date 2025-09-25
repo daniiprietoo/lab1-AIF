@@ -73,6 +73,10 @@ class DrillingRobotProblem(Problem):
         if (row, column) != (self.goal[0], self.goal[1]):
             return False
 
+        # If the goal orientation is 8 then it is irrelevant
+        if self.goal[2] == 8:
+            return True
+
         if self.goal[2] is not None:
             return orientation == self.goal[2]
 
@@ -108,8 +112,6 @@ def parse_grid_from_file(file_path):
 
         line = file.readline().strip()
         start_row, start_column, start_orientation = map(int, line.split())
-        if start_orientation == 8:
-            start_orientation = 0
         start = (start_row, start_column, start_orientation)
 
         line = file.readline().strip()
