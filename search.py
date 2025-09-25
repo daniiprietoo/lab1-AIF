@@ -1,3 +1,7 @@
+from utils import *
+from collections import deque
+
+
 class Problem:
     """The abstract class for a formal problem. You should subclass
     this and implement the methods actions and result, and possibly
@@ -76,13 +80,19 @@ class Node:
 
     def expand(self, problem):
         """List the nodes reachable in one step from this node."""
-        return [self.child_node(problem, action)
-                for action in problem.actions(self.state)]
+        return [
+            self.child_node(problem, action) for action in problem.actions(self.state)
+        ]
 
     def child_node(self, problem, action):
         """[Figure 3.10]"""
         next_state = problem.result(self.state, action)
-        next_node = Node(next_state, self, action, problem.path_cost(self.path_cost, self.state, action, next_state))
+        next_node = Node(
+            next_state,
+            self,
+            action,
+            problem.path_cost(self.path_cost, self.state, action, next_state),
+        )
         return next_node
 
     def solution(self):
@@ -112,6 +122,15 @@ class Node:
         # with the same state in a Hash Table
         return hash(self.state)
 
+
+class Result:
+    def __init__(self, solution=None, explored=0, frontier=0, last_node=None):
+        self.solution = solution
+        self.explored = explored
+        self.frontier = frontier
+        self.last_node = last_node
+
+
 def breadth_first_graph_search(problem):
     """[Figure 3.11]
     Note that this function can be implemented in a
@@ -120,7 +139,8 @@ def breadth_first_graph_search(problem):
     """
     node = Node(problem.initial)
     if problem.goal_test(node.state):
-        return node
+        return Result(solution=node, explored=0, frontier=0, last_node=node)
+
     frontier = deque([node])
     explored = set()
     while frontier:
@@ -129,9 +149,15 @@ def breadth_first_graph_search(problem):
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
                 if problem.goal_test(child.state):
-                    return child
+                    return Result(
+                        solution=child,
+                        explored=len(explored),
+                        frontier=len(frontier),
+                        last_node=child,
+                    )
                 frontier.append(child)
     return None
+
 
 def depth_first_graph_search(problem):
     """
@@ -142,19 +168,30 @@ def depth_first_graph_search(problem):
     Does not get trapped by loops.
     If two paths reach a state, only use the first one.
     """
-    frontier = [(Node(problem.initial))]  # Stack
+    frontier = [Node(problem.initial)]  # Stack
 
     explored = set()
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
-            return node
+            return Result(
+                solution=node,
+                explored=len(explored),
+                frontier=len(frontier),
+                last_node=node,
+            )
         explored.add(node.state)
-        frontier.extend(child for child in node.expand(problem)
-                        if child.state not in explored and child not in frontier)
-    return None
+        frontier.extend(
+            child
+            for child in node.expand(problem)
+            if child.state not in explored and child not in frontier
+        )
+    return Result(
+        solution=None, explored=len(explored), frontier=len(frontier), last_node=None
+    )
 
-def best_first_graph_search(problem, f, display=False):
+
+def best_first_graph_search(problem, f):
     """Search the nodes with the lowest f scores first.
     You specify the function f(node) that you want to minimize; for example,
     if f is a heuristic estimate to the goal, then we have greedy best
@@ -162,17 +199,21 @@ def best_first_graph_search(problem, f, display=False):
     There is a subtlety: the line "f = memoize(f, 'f')" means that the f
     values will be cached on the nodes as they are computed. So after doing
     a best first search you can examine the f values of the path returned."""
-    f = memoize(f, 'f')
+
+    f = memoize(f, "f")
     node = Node(problem.initial)
-    frontier = PriorityQueue('min', f)
+    frontier = PriorityQueue("min", f)
     frontier.append(node)
     explored = set()
     while frontier:
         node = frontier.pop()
         if problem.goal_test(node.state):
-            if display:
-                print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
-            return node
+            return Result(
+                solution=node,
+                explored=len(explored),
+                frontier=len(frontier),
+                last_node=node,
+            )
         explored.add(node.state)
         for child in node.expand(problem):
             if child.state not in explored and child not in frontier:
@@ -181,13 +222,14 @@ def best_first_graph_search(problem, f, display=False):
                 if f(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
-    return None
+    return Result(
+        solution=None, explored=len(explored), frontier=len(frontier), last_node=None
+    )
 
 
-
-def astar_search(problem, h=None, display=False):
+def astar_search(problem, h=None):
     """A* search is best-first graph search with f(n) = g(n)+h(n).
     You need to specify the h function when you call astar_search, or
     else in your Problem subclass."""
-    h = memoize(h or problem.h, 'h')
-    return best_first_graph_search(problem, lambda n: n.path_cost + h(n), display)
+    h = memoize(h or problem.h, "h")
+    return best_first_graph_search(problem, lambda n: n.path_cost + h(n))
