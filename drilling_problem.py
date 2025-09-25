@@ -108,6 +108,8 @@ def parse_grid_from_file(file_path):
 
         line = file.readline().strip()
         start_row, start_column, start_orientation = map(int, line.split())
+        if start_orientation == 8:
+            start_orientation = 0
         start = (start_row, start_column, start_orientation)
 
         line = file.readline().strip()
