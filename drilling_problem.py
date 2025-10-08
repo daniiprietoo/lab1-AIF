@@ -1,6 +1,55 @@
-from search import Problem
-from utils import manhattan_distance
+from utils import euclidean_distance, is_in
 import random
+
+
+class Problem:
+    """The abstract class for a formal problem. You should subclass
+    this and implement the methods actions and result, and possibly
+    __init__, goal_test, and path_cost. Then you will create instances
+    of your subclass and solve them with the various search functions."""
+
+    def __init__(self, initial, goal=None):
+        """The constructor specifies the initial state, and possibly a goal
+        state, if there is a unique goal. Your subclass's constructor can add
+        other arguments."""
+        self.initial = initial
+        self.goal = goal
+
+    def actions(self, state):
+        """Return the actions that can be executed in the given
+        state. The result would typically be a list, but if there are
+        many actions, consider yielding them one at a time in an
+        iterator, rather than building them all at once."""
+        raise NotImplementedError
+
+    def result(self, state, action):
+        """Return the state that results from executing the given
+        action in the given state. The action must be one of
+        self.actions(state)."""
+        raise NotImplementedError
+
+    def goal_test(self, state):
+        """Return True if the state is a goal. The default method compares the
+        state to self.goal or checks for state in self.goal if it is a
+        list, as specified in the constructor. Override this method if
+        checking against a single self.goal is not enough."""
+        if isinstance(self.goal, list):
+            return is_in(state, self.goal)
+        else:
+            return state == self.goal
+
+    def path_cost(self, c, state1, action, state2):
+        """Return the cost of a solution path that arrives at state2 from
+        state1 via action, assuming cost c to get up to state1. If the problem
+        is such that the path doesn't matter, this function will only look at
+        state2. If the path does matter, it will consider c and maybe state1
+        and action. The default method costs 1 for every step in the path."""
+        return c + 1
+
+    def value(self, state):
+        """For optimization problems, each state has a value. Hill Climbing
+        and related algorithms try to maximize this value."""
+        raise NotImplementedError
 
 
 class DrillingRobotProblem(Problem):
@@ -24,9 +73,10 @@ class DrillingRobotProblem(Problem):
             start[1],
             start[2],
         )  # (x, y, orientation_index)
+        self.grid_min_hardness = min(min(row) for row in grid)
         super().__init__(initial_state, goal)
 
-    # We can assusme that the grid is rectangular, (from the problem statement)
+    # grid is rectangular, (from the problem statement)
     def is_valid_position(self, row, column):
         rows = len(self.grid)
         columns = len(self.grid[0])
@@ -68,21 +118,17 @@ class DrillingRobotProblem(Problem):
                 return state
 
     def goal_test(self, state):
-        """Check if the current state is the goal state."""
-        (row, column, orientation) = state
-        if (row, column) != (self.goal[0], self.goal[1]):
+        row, column, orientation = state
+        goal_row, goal_column, goal_orientation = self.goal
+
+        if (row, column) != (goal_row, goal_column):
             return False
-
-        # If the goal orientation is 8 then it is irrelevant
-        if self.goal[2] == 8:
+        if goal_orientation == 8:  # 8 means orientation is not relevant
             return True
-
-        if self.goal[2] is not None:
-            return orientation == self.goal[2]
-
-        return True
+        return orientation == goal_orientation
 
     def path_cost(self, c, state1, action, state2):
+        # c is the cummulative cost to reach state1
         if action == "move_forward":
             (row, column, _) = state2
             return (
@@ -94,28 +140,6 @@ class DrillingRobotProblem(Problem):
     def h(self, node):
         (row, column, _) = node.state
         (goal_row, goal_column, _) = self.goal
-        return manhattan_distance((row, column), (goal_row, goal_column))
+        euclidean_dist = euclidean_distance((row, column), (goal_row, goal_column))
 
-
-def generate_grid(rows, columns):
-    return [[random.randint(1, 9) for _ in range(columns)] for _ in range(rows)]
-
-
-def parse_grid_from_file(file_path):
-    grid = []
-    with open(file_path, "r") as file:
-        line = file.readline().strip()
-        rows, _ = map(int, line.split())
-        for _ in range(rows):
-            line = file.readline().strip()
-            grid.append(list(map(int, line.split())))
-
-        line = file.readline().strip()
-        start_row, start_column, start_orientation = map(int, line.split())
-        start = (start_row, start_column, start_orientation)
-
-        line = file.readline().strip()
-        goal_row, goal_column, goal_orientation = map(int, line.split())
-        goal = (goal_row, goal_column, goal_orientation)
-
-    return grid, start, goal
+        return euclidean_dist * self.grid_min_hardness
