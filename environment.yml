@@ -1,4 +1,4 @@
-name: AIF-Lab1
+name: AIF-Lab
 channels:
   - defaults
 dependencies:
