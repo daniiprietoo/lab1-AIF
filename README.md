@@ -46,7 +46,7 @@
 
     ```bash
     conda env create -f environment.yml
-    conda activate lab1-AIF
+    conda activate AIF-Lab
     ```
 
 2. Run the main script to launch the CLI.
