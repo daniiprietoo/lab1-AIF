@@ -9,7 +9,7 @@
 
 2. Make sure you have Python 3.10 or higher installed (either in conda or system-wide).
 
-3. If using a virtual environment:
+3(a). If using a virtual environment:
 
     a. create and activate it:
 
@@ -30,7 +30,7 @@
     python main.py
     ```
 
-3. If using conda:
+3(b). If using conda:
 
     a. create and activate the environment:
 
