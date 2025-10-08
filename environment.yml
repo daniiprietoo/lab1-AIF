@@ -1,0 +1,7 @@
+name: AIF-Lab1
+channels:
+  - defaults
+dependencies:
+  - python=3.13.5
+  - conda-project
+  - numpy
