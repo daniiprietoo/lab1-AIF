@@ -71,10 +71,13 @@ def main():
         input_simulations = input(
             "Number of simulations per map size (default 5): "
         ).strip()
-        if input_simulations and not input_simulations.isdigit():
+        if input_simulations and input_simulations.isdigit():
+            run_performance_analysis(int(input_simulations))
+        elif input_simulations == "":
+            run_performance_analysis(5)
+        else:
             print("Invalid input. Please enter a valid integer.")
             return
-        run_performance_analysis(int(input_simulations))
 
     else:
         print("Invalid choice. Please enter 1 or 2.")
