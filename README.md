@@ -21,7 +21,7 @@
     python3 -vV
     ```
 
-2. create and activate it:
+2. create the virtual environment and activate it:
 
     ```bash
     python -m venv venv
@@ -34,7 +34,7 @@
     pip install -r requirements.txt
     ```
 
-    c. Run the main script to launch the CLI.
+4. Run the main script to launch the CLI.
 
     ```bash
     python main.py
@@ -69,7 +69,9 @@ Your choice (1/2/3):
 
 You can choose one of the options by entering `1`, `2`, or `3`.
 
-The two first options will prompt again to choose the algorithm to use:
+***If 1 or 2 are chosen***
+
+It will prompt again to choose the algorithm to use:
 
 ```text
 Choose algorithm:
@@ -82,8 +84,12 @@ Your choice (1/2/3/4):
 
 After selecting the algorithm, the program will execute and display the results in the console.
 
-The will prompt again to choose the number of runs desired for each grid size.
+***If 3 is chosen***
+
+It will prompt again to choose the number of runs desired for each grid size.
 
 ```text
 Number of simulations per map size (default 5): 
 ```
+
+It will print out the results in the console in a table format and organized by grid size. *If you want to skip having to type again the number of simulations, you can just press `Enter` to use the default value of 5.*
